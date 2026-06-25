@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avatar Editor — Roblox Style</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #1a3038;
+  --panel: #2a9d90;
+  --panel-dark: #1e7a6f;
+  --accent: #e9c56a;
+  --accent-hover: #d4a843;
+  --text: #ffffff;
+  --text-dim: #b0d0cc;
+  --card-bg: #174048;
+  --card-hover: #1d5560;
+  --card-selected: #e9c56a;
+  --sidebar-bg: #14282e;
+  --radius: 8px;
+  --font-pixel: 'Press Start 2P', monospace;
+}
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+.app { display: flex; flex: 1; min-height: 0; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 200px;
+  min-width: 200px;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 8px;
+  gap: 4px;
+  overflow-y: auto;
+}
+.sidebar-title {
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  color: var(--accent);
+  text-align: center;
+  padding: 12px 4px 18px;
+  letter-spacing: 1px;
+  line-height: 1.5;
+}
+.cat-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  text-align: left;
+  white-space: nowrap;
+}
+.cat-btn:hover { background: rgba(255,255,255,.08); color: var(--text); }
+.cat-btn.active { background: var(--panel); color: var(--text); font-weight: 700; }
+.cat-btn .icon { font-size: 18px; width: 24px; text-align: center; }
+
+/* CENTER STAGE */
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  min-width: 0;
+}
+.stage-box {
+  background: linear-gradient(145deg, #1e4a50, #163238);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  border: 2px solid rgba(255,255,255,.06);
+}
+.avatar-wrap {
+  width: 300px;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.avatar-wrap svg { transition: opacity .15s; }
+.username-input {
+  margin-top: 14px;
+  background: rgba(0,0,0,.25);
+  border: 2px solid var(--panel);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  padding: 8px 14px;
+  text-align: center;
+  width: 200px;
+  outline: none;
+}
+.username-input:focus { border-color: var(--accent); }
+
+/* RIGHT PANEL */
+.picker {
+  width: 340px;
+  min-width: 340px;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow-y: auto;
+}
+.picker-title {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  color: var(--accent);
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.item-card {
+  background: var(--card-bg);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.item-card:hover { background: var(--card-hover); transform: translateY(-1px); }
+.item-card.selected { border-color: var(--card-selected); background: rgba(233,197,106,.1); }
+.item-card .thumb { width: 60px; height: 60px; }
+.item-card .label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.3;
+}
+.item-card.selected .label { color: var(--accent); font-weight: 700; }
+
+.color-section { margin-top: 4px; }
+.color-section-title {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.color-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 2px solid rgba(255,255,255,.15);
+  cursor: pointer;
+  transition: border-color .15s, transform .1s;
+}
+.color-swatch:hover { transform: scale(1.12); }
+.color-swatch.active { border-color: var(--accent); border-width: 3px; }
+.hex-input {
+  width: 80px;
+  background: rgba(0,0,0,.3);
+  border: 2px solid var(--panel-dark);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 8px;
+  outline: none;
+}
+.hex-input:focus { border-color: var(--accent); }
+
+/* BOTTOM BAR */
+.action-bar {
+  display: flex;
+  gap: 10px;
+  padding: 12px 20px;
+  background: var(--sidebar-bg);
+  border-top: 1px solid rgba(255,255,255,.06);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.action-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.action-btn:hover { transform: translateY(-1px); }
+.action-btn:active { transform: translateY(0); }
+.btn-randomize { background: var(--panel); color: var(--text); }
+.btn-randomize:hover { background: var(--panel-dark); }
+.btn-reset { background: #444; color: var(--text); }
+.btn-reset:hover { background: #555; }
+.btn-save { background: var(--accent); color: #1a1a1a; }
+.btn-save:hover { background: var(--accent-hover); }
+.btn-share { background: #5865F2; color: var(--text); }
+.btn-share:hover { background: #4752c4; }
+
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--accent);
+  color: #1a1a1a;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity .2s, transform .2s;
+  pointer-events: none;
+  z-index: 100;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* MOBILE TAB BAR */
+.mobile-tabs {
+  display: none;
+  background: var(--sidebar-bg);
+  border-top: 1px solid rgba(255,255,255,.06);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 4px;
+  gap: 2px;
+}
+.mobile-tabs::-webkit-scrollbar { display: none; }
+.mob-tab {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mob-tab .icon { font-size: 18px; }
+.mob-tab.active { background: var(--panel); color: var(--text); }
+
+@media (max-width: 900px) {
+  .app { flex-direction: column; }
+  .sidebar { display: none; }
+  .mobile-tabs { display: flex; }
+  .stage { padding: 16px 8px; }
+  .avatar-wrap { width: 220px; height: 300px; }
+  .picker { width: 100%; min-width: 0; max-height: 45vh; }
+  .item-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 500px) {
+  .item-grid { grid-template-columns: repeat(2, 1fr); }
+  .picker { padding: 10px; }
+  .stage-box { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="stage">
+    <div class="stage-box">
+      <div class="avatar-wrap" id="avatarWrap"></div>
+      <input class="username-input" id="usernameInput" type="text" value="Player1" maxlength="20" placeholder="Username">
+    </div>
+  </main>
+  <aside class="picker" id="picker"></aside>
+</div>
+
+<nav class="mobile-tabs" id="mobileTabs"></nav>
+
+<div class="action-bar" id="actionBar">
+  <button class="action-btn btn-randomize" onclick="randomize()">🎲 Randomize</button>
+  <button class="action-btn btn-reset" onclick="resetAvatar()">↺ Reset</button>
+  <button class="action-btn btn-save" onclick="savePNG()">💾 Save PNG</button>
+  <button class="action-btn btn-share" onclick="shareLink()">🔗 Share</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// 1. DATA
+// ============================================================
+
+const SKIN_COLORS = ['#ffcba4','#e8b48f','#c68642','#8d5524','#5c3317','#f5d6c3'];
+const HAIR_COLORS = ['#2c1b0e','#5a3825','#c7944e','#e8c56a','#d44','#6a1b9a'];
+const SHIRT_COLORS = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#ecf0f1'];
+const PANTS_COLORS = ['#2c3e50','#34495e','#1a5276','#784212','#5d6d7e','#1e8449'];
+
+const CATEGORIES = [
+  {
+    id: 'body', label: 'Body', icon: '🧍',
+    hasColor: 'skin',
+    items: [
+      { id: 'classic', label: 'Classic' },
+      { id: 'rthro', label: 'Rthro' },
+      { id: 'rthro_narrow', label: 'Rthro Narrow' },
+      { id: 'blocky', label: 'Blocky' },
+      { id: 'stylish', label: 'Stylish' },
+      { id: 'boy', label: 'Boy' },
+      { id: 'girl', label: 'Girl' },
+      { id: 'rthro_tall', label: 'Rthro Tall' },
+      { id: 'rthro_short', label: 'Rthro Short' },
+      { id: 'custom', label: 'Custom' },
+    ]
+  },
+  {
+    id: 'head', label: 'Head', icon: '🗿',
+    hasColor: 'skin',
+    items: [
+      { id: 'standard', label: 'Standard' },
+      { id: 'round', label: 'Round' },
+      { id: 'rthro', label: 'Rthro' },
+      { id: 'square', label: 'Square' },
+      { id: 'pointy', label: 'Pointy' },
+      { id: 'oval', label: 'Oval' },
+      { id: 'alien', label: 'Alien' },
+      { id: 'pumpkin', label: 'Pumpkin' },
+      { id: 'candy', label: 'Candy' },
+      { id: 'diamond', label: 'Diamond' },
+    ]
+  },
+  {
+    id: 'face', label: 'Face', icon: '😀',
+    hasColor: null,
+    items: [
+      { id: 'smile', label: 'Smile' },
+      { id: 'worried', label: 'Worried' },
+      { id: 'sunglasses', label: 'Sunglasses' },
+      { id: 'bandana', label: 'Bandana' },
+      { id: 'freckles', label: 'Freckles' },
+      { id: 'blush', label: 'Blush' },
+      { id: 'shocked', label: 'Shocked' },
+      { id: 'cyclops', label: 'Cyclops' },
+      { id: 'robot_visor', label: 'Robot Visor' },
+      { id: 'derp', label: 'Derp' },
+    ]
+  },
+  {
+    id: 'hair', label: 'Hair', icon: '💇',
+    hasColor: 'hair',
+    items: [
+      { id: 'none', label: 'None' },
+      { id: 'messy', label: 'Messy' },
+      { id: 'spiky', label: 'Spiky' },
+      { id: 'ponytail', label: 'Ponytail' },
+      { id: 'curly', label: 'Curly' },
+      { id: 'bun', label: 'Bun' },
+      { id: 'mohawk', label: 'Mohawk' },
+      { id: 'sidepart', label: 'Side Part' },
+      { id: 'afro', label: 'Afro' },
+      { id: 'pigtails', label: 'Pigtails' },
+    ]
+  },
+  {
+    id: 'shirt', label: 'Shirt', icon: '👕',
+    hasColor: 'shirt',
+    items: [
+      { id: 'tee', label: 'Tee' },
+      { id: 'hoodie', label: 'Hoodie' },
+      { id: 'suit', label: 'Suit' },
+      { id: 'tank', label: 'Tank' },
+      { id: 'jersey', label: 'Jersey' },
+      { id: 'armor', label: 'Armor' },
+      { id: 'labcoat', label: 'Lab Coat' },
+      { id: 'cape', label: 'Cape' },
+      { id: 'flannel', label: 'Flannel' },
+      { id: 'jacket', label: 'Jacket' },
+    ]
+  },
+  {
+    id: 'pants', label: 'Pants', icon: '👖',
+    hasColor: 'pants',
+    items: [
+      { id: 'jeans', label: 'Jeans' },
+      { id: 'shorts', label: 'Shorts' },
+      { id: 'slacks', label: 'Slacks' },
+      { id: 'cargo', label: 'Cargo' },
+      { id: 'leggings', label: 'Leggings' },
+      { id: 'swimtrunks', label: 'Swim Trunks' },
+      { id: 'overalls', label: 'Overalls' },
+      { id: 'plaid', label: 'Plaid' },
+      { id: 'joggers', label: 'Joggers' },
+      { id: 'ripped', label: 'Ripped' },
+    ]
+  },
+  {
+    id: 'shoes', label: 'Shoes', icon: '👟',
+    hasColor: null,
+    items: [
+      { id: 'sneakers', label: 'Sneakers' },
+      { id: 'boots', label: 'Boots' },
+      { id: 'sandals', label: 'Sandals' },
+      { id: 'hightops', label: 'High-Tops' },
+      { id: 'loafers', label: 'Loafers' },
+      { id: 'cleats', label: 'Cleats' },
+      { id: 'none', label: 'None' },
+      { id: 'platforms', label: 'Platforms' },
+      { id: 'slippers', label: 'Slippers' },
+      { id: 'crocs', label: 'Crocs' },
+    ]
+  },
+  {
+    id: 'accessory', label: 'Accessory', icon: '👑',
+    hasColor: null,
+    items: [
+      { id: 'none', label: 'None' },
+      { id: 'crown', label: 'Crown' },
+      { id: 'headphones', label: 'Headphones' },
+      { id: 'backpack', label: 'Backpack' },
+      { id: 'wings', label: 'Wings' },
+      { id: 'sword', label: 'Sword' },
+      { id: 'shield', label: 'Shield' },
+      { id: 'guitar', label: 'Guitar' },
+      { id: 'jetpack', label: 'Jetpack' },
+      { id: 'halo', label: 'Halo' },
+    ]
+  },
+];
+
+// ============================================================
+// 2. STATE
+// ============================================================
+
+const DEFAULTS = {
+  body: 'classic', head: 'standard', face: 'smile', hair: 'messy',
+  shirt: 'tee', pants: 'jeans', shoes: 'sneakers', accessory: 'none',
+  skinColor: '#ffcba4', hairColor: '#2c1b0e',
+  shirtColor: '#e74c3c', pantsColor: '#2c3e50',
+};
+
+let state = { ...DEFAULTS };
+let activeCategory = 'body';
+
+// ============================================================
+// 3. RENDERER — SVG drawing functions
+// ============================================================
+
+function getBodyDims(bodyId) {
+  const dims = {
+    classic:      { tw: 60, th: 80, aw: 14, al: 55, lw: 18, ll: 70, shoulderW: 30 },
+    rthro:        { tw: 50, th: 90, aw: 12, al: 60, lw: 16, ll: 80, shoulderW: 25 },
+    rthro_narrow: { tw: 44, th: 88, aw: 10, al: 58, lw: 14, ll: 78, shoulderW: 22 },
+    blocky:       { tw: 70, th: 74, aw: 18, al: 50, lw: 22, ll: 64, shoulderW: 35 },
+    stylish:      { tw: 52, th: 84, aw: 12, al: 56, lw: 16, ll: 74, shoulderW: 26 },
+    boy:          { tw: 56, th: 78, aw: 14, al: 52, lw: 18, ll: 68, shoulderW: 28 },
+    girl:         { tw: 48, th: 82, aw: 12, al: 54, lw: 16, ll: 72, shoulderW: 24 },
+    rthro_tall:   { tw: 48, th: 96, aw: 11, al: 64, lw: 15, ll: 86, shoulderW: 24 },
+    rthro_short:  { tw: 56, th: 70, aw: 14, al: 46, lw: 18, ll: 60, shoulderW: 28 },
+    custom:       { tw: 54, th: 82, aw: 13, al: 55, lw: 17, ll: 72, shoulderW: 27 },
+  };
+  return dims[bodyId] || dims.classic;
+}
+
+function darken(hex, amt) {
+  let c = hex.replace('#','');
+  if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+  const n = parseInt(c, 16);
+  let r = Math.max(0, (n >> 16) - amt);
+  let g = Math.max(0, ((n >> 8) & 0xff) - amt);
+  let b = Math.max(0, (n & 0xff) - amt);
+  return '#' + ((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+function lighten(hex, amt) {
+  let c = hex.replace('#','');
+  if (c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+  const n = parseInt(c, 16);
+  let r = Math.min(255, (n >> 16) + amt);
+  let g = Math.min(255, ((n >> 8) & 0xff) + amt);
+  let b = Math.min(255, (n & 0xff) + amt);
+  return '#' + ((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+function drawShoes(svg, s) {
+  const d = getBodyDims(s.body);
+  const cx = 100, bodyTop = 60;
+  const legTop = bodyTop + d.th;
+  const footY = legTop + d.ll;
+  const gap = 4;
+  const lx = cx - gap - d.lw;
+  const rx = cx + gap;
+
+  const shoeH = 12, shoeW = d.lw + 8;
+  const col = '#444';
+  const hi = '#555';
+
+  const shoes = {
+    sneakers: () => {
+      svg.innerHTML += `<rect x="${lx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="4" fill="${col}"/>`;
+      svg.innerHTML += `<rect x="${rx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="4" fill="${col}"/>`;
+      svg.innerHTML += `<rect x="${lx-2}" y="${footY+2}" width="${shoeW-4}" height="3" rx="1" fill="${hi}"/>`;
+      svg.innerHTML += `<rect x="${rx-2}" y="${footY+2}" width="${shoeW-4}" height="3" rx="1" fill="${hi}"/>`;
+    },
+    boots: () => {
+      const bh = 22;
+      svg.innerHTML += `<rect x="${lx-2}" y="${footY-bh+shoeH}" width="${d.lw+4}" height="${bh}" rx="3" fill="#5c3317"/>`;
+      svg.innerHTML += `<rect x="${rx-2}" y="${footY-bh+shoeH}" width="${d.lw+4}" height="${bh}" rx="3" fill="#5c3317"/>`;
+      svg.innerHTML += `<rect x="${lx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="3" fill="#4a2a10"/>`;
+      svg.innerHTML += `<rect x="${rx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="3" fill="#4a2a10"/>`;
+    },
+    sandals: () => {
+      svg.innerHTML += `<rect x="${lx-4}" y="${footY+2}" width="${shoeW}" height="8" rx="3" fill="#c68642"/>`;
+      svg.innerHTML += `<rect x="${rx-4}" y="${footY+2}" width="${shoeW}" height="8" rx="3" fill="#c68642"/>`;
+      svg.innerHTML += `<line x1="${lx+d.lw/2-2}" y1="${footY-2}" x2="${lx+d.lw/2-2}" y2="${footY+6}" stroke="#a06030" stroke-width="2"/>`;
+      svg.innerHTML += `<line x1="${rx+d.lw/2-2}" y1="${footY-2}" x2="${rx+d.lw/2-2}" y2="${footY+6}" stroke="#a06030" stroke-width="2"/>`;
+    },
+    hightops: () => {
+      const bh = 18;
+      svg.innerHTML += `<rect x="${lx-2}" y="${footY-bh+shoeH}" width="${d.lw+4}" height="${bh}" rx="3" fill="#e74c3c"/>`;
+      svg.innerHTML += `<rect x="${rx-2}" y="${footY-bh+shoeH}" width="${d.lw+4}" height="${bh}" rx="3" fill="#e74c3c"/>`;
+      svg.innerHTML += `<rect x="${lx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="4" fill="#c0392b"/>`;
+      svg.innerHTML += `<rect x="${rx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="4" fill="#c0392b"/>`;
+      svg.innerHTML += `<circle cx="${lx+d.lw/2}" cy="${footY-bh+shoeH+5}" r="2.5" fill="white"/>`;
+      svg.innerHTML += `<circle cx="${rx+d.lw/2}" cy="${footY-bh+shoeH+5}" r="2.5" fill="white"/>`;
+    },
+    loafers: () => {
+      svg.innerHTML += `<rect x="${lx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="5" fill="#2c1b0e"/>`;
+      svg.innerHTML += `<rect x="${rx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="5" fill="#2c1b0e"/>`;
+    },
+    cleats: () => {
+      svg.innerHTML += `<rect x="${lx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="3" fill="#222"/>`;
+      svg.innerHTML += `<rect x="${rx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="3" fill="#222"/>`;
+      for (let i = 0; i < 3; i++) {
+        svg.innerHTML += `<rect x="${lx-2+i*7}" y="${footY+shoeH-2}" width="4" height="4" rx="1" fill="#666"/>`;
+        svg.innerHTML += `<rect x="${rx-2+i*7}" y="${footY+shoeH-2}" width="4" height="4" rx="1" fill="#666"/>`;
+      }
+    },
+    none: () => {},
+    platforms: () => {
+      const ph = 18;
+      svg.innerHTML += `<rect x="${lx-5}" y="${footY}" width="${shoeW+2}" height="${ph}" rx="4" fill="#9b59b6"/>`;
+      svg.innerHTML += `<rect x="${rx-5}" y="${footY}" width="${shoeW+2}" height="${ph}" rx="4" fill="#9b59b6"/>`;
+    },
+    slippers: () => {
+      svg.innerHTML += `<ellipse cx="${lx+d.lw/2}" cy="${footY+5}" rx="${shoeW/2}" ry="7" fill="#f7c6c6"/>`;
+      svg.innerHTML += `<ellipse cx="${rx+d.lw/2}" cy="${footY+5}" rx="${shoeW/2}" ry="7" fill="#f7c6c6"/>`;
+    },
+    crocs: () => {
+      svg.innerHTML += `<rect x="${lx-5}" y="${footY-2}" width="${shoeW+2}" height="${shoeH+2}" rx="6" fill="#2ecc71"/>`;
+      svg.innerHTML += `<rect x="${rx-5}" y="${footY-2}" width="${shoeW+2}" height="${shoeH+2}" rx="6" fill="#2ecc71"/>`;
+      for (let i = 0; i < 3; i++) {
+        svg.innerHTML += `<circle cx="${lx+i*6+2}" cy="${footY+3}" r="1.5" fill="${darken('#2ecc71',30)}"/>`;
+        svg.innerHTML += `<circle cx="${rx+i*6+2}" cy="${footY+3}" r="1.5" fill="${darken('#2ecc71',30)}"/>`;
+      }
+    },
+  };
+  (shoes[s.shoes] || shoes.sneakers)();
+}
+
+function drawLegs(svg, s) {
+  const d = getBodyDims(s.body);
+  const cx = 100, bodyTop = 60;
+  const legTop = bodyTop + d.th;
+  const gap = 4;
+  const lx = cx - gap - d.lw;
+  const rx = cx + gap;
+  svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${s.skinColor}"/>`;
+  svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${s.skinColor}"/>`;
+}
+
+function drawPants(svg, s) {
+  const d = getBodyDims(s.body);
+  const cx = 100, bodyTop = 60;
+  const legTop = bodyTop + d.th;
+  const gap = 4;
+  const lx = cx - gap - d.lw;
+  const rx = cx + gap;
+  const pc = s.pantsColor;
+  const pcd = darken(pc, 25);
+
+  const pantsFn = {
+    jeans: () => {
+      svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="4" fill="${pcd}"/>`;
+      svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="4" fill="${pcd}"/>`;
+    },
+    shorts: () => {
+      const sl = d.ll * 0.45;
+      svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${sl}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="${sl}" rx="3" fill="${pc}"/>`;
+    },
+    slacks: () => {
+      svg.innerHTML += `<rect x="${lx-1}" y="${legTop}" width="${d.lw+2}" height="${d.ll}" rx="2" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx-1}" y="${legTop}" width="${d.lw+2}" height="${d.ll}" rx="2" fill="${pc}"/>`;
+      svg.innerHTML += `<line x1="${lx+d.lw/2}" y1="${legTop+8}" x2="${lx+d.lw/2}" y2="${legTop+d.ll-4}" stroke="${pcd}" stroke-width="1"/>`;
+      svg.innerHTML += `<line x1="${rx+d.lw/2}" y1="${legTop+8}" x2="${rx+d.lw/2}" y2="${legTop+d.ll-4}" stroke="${pcd}" stroke-width="1"/>`;
+    },
+    cargo: () => {
+      svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${lx+1}" y="${legTop+d.ll*0.4}" width="${d.lw-2}" height="10" rx="2" fill="${pcd}"/>`;
+      svg.innerHTML += `<rect x="${rx+1}" y="${legTop+d.ll*0.4}" width="${d.lw-2}" height="10" rx="2" fill="${pcd}"/>`;
+    },
+    leggings: () => {
+      svg.innerHTML += `<rect x="${lx+1}" y="${legTop}" width="${d.lw-2}" height="${d.ll}" rx="2" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx+1}" y="${legTop}" width="${d.lw-2}" height="${d.ll}" rx="2" fill="${pc}"/>`;
+    },
+    swimtrunks: () => {
+      const sl = d.ll * 0.35;
+      svg.innerHTML += `<rect x="${lx-1}" y="${legTop}" width="${d.lw+2}" height="${sl}" rx="4" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx-1}" y="${legTop}" width="${d.lw+2}" height="${sl}" rx="4" fill="${pc}"/>`;
+      svg.innerHTML += `<line x1="${lx+2}" y1="${legTop+sl-4}" x2="${lx+d.lw-2}" y2="${legTop+sl-4}" stroke="white" stroke-width="1.5"/>`;
+      svg.innerHTML += `<line x1="${rx+2}" y1="${legTop+sl-4}" x2="${rx+d.lw-2}" y2="${legTop+sl-4}" stroke="white" stroke-width="1.5"/>`;
+    },
+    overalls: () => {
+      svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${legTop-20}" width="${d.tw}" height="24" rx="2" fill="${pc}"/>`;
+      svg.innerHTML += `<line x1="${cx-d.tw/2+6}" y1="${legTop-20}" x2="${cx-8}" y2="${legTop-36}" stroke="${pcd}" stroke-width="3" stroke-linecap="round"/>`;
+      svg.innerHTML += `<line x1="${cx+d.tw/2-6}" y1="${legTop-20}" x2="${cx+8}" y2="${legTop-36}" stroke="${pcd}" stroke-width="3" stroke-linecap="round"/>`;
+    },
+    plaid: () => {
+      svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      for (let i = 0; i < d.ll; i += 10) {
+        svg.innerHTML += `<line x1="${lx}" y1="${legTop+i}" x2="${lx+d.lw}" y2="${legTop+i}" stroke="${pcd}" stroke-width="0.8" opacity="0.5"/>`;
+        svg.innerHTML += `<line x1="${rx}" y1="${legTop+i}" x2="${rx+d.lw}" y2="${legTop+i}" stroke="${pcd}" stroke-width="0.8" opacity="0.5"/>`;
+      }
+    },
+    joggers: () => {
+      svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${lx}" y="${legTop+d.ll-6}" width="${d.lw}" height="6" rx="2" fill="${pcd}"/>`;
+      svg.innerHTML += `<rect x="${rx}" y="${legTop+d.ll-6}" width="${d.lw}" height="6" rx="2" fill="${pcd}"/>`;
+    },
+    ripped: () => {
+      svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
+      const ky = legTop + d.ll * 0.45;
+      svg.innerHTML += `<rect x="${lx+2}" y="${ky}" width="${d.lw-4}" height="8" rx="2" fill="${s.skinColor}" opacity="0.7"/>`;
+      svg.innerHTML += `<rect x="${rx+2}" y="${ky}" width="${d.lw-4}" height="8" rx="2" fill="${s.skinColor}" opacity="0.7"/>`;
+    },
+  };
+  (pantsFn[s.pants] || pantsFn.jeans)();
+}
+
+function drawShirt(svg, s) {
+  const d = getBodyDims(s.body);
+  const cx = 100, bodyTop = 60;
+  const sc = s.shirtColor;
+  const scd = darken(sc, 30);
+  const armLen = d.al;
+  const armTop = bodyTop + 4;
+
+  const shirtFn = {
+    tee: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop}" width="${d.tw}" height="${d.th}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<path d="M${cx-6} ${bodyTop} Q${cx} ${bodyTop+8} ${cx+6} ${bodyTop}" stroke="${scd}" fill="none" stroke-width="1.5"/>`;
+    },
+    hoodie: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2-2}" y="${bodyTop}" width="${d.tw+4}" height="${d.th}" rx="5" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw-2}" y="${armTop}" width="${d.aw+2}" height="${armLen}" rx="5" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw+2}" height="${armLen}" rx="5" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx-8}" y="${bodyTop+d.th*0.5}" width="16" height="12" rx="3" fill="${scd}"/>`;
+      svg.innerHTML += `<path d="M${cx-10} ${bodyTop-2} Q${cx} ${bodyTop+6} ${cx+10} ${bodyTop-2}" stroke="${scd}" fill="none" stroke-width="2"/>`;
+    },
+    suit: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop}" width="${d.tw}" height="${d.th}" rx="3" fill="#1a1a2e"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="3" fill="#1a1a2e"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="3" fill="#1a1a2e"/>`;
+      svg.innerHTML += `<rect x="${cx-3}" y="${bodyTop+6}" width="6" height="${d.th-10}" rx="1" fill="white" opacity="0.9"/>`;
+      svg.innerHTML += `<polygon points="${cx-d.tw/2+4},${bodyTop+2} ${cx},${bodyTop+18} ${cx+d.tw/2-4},${bodyTop+2}" fill="#2c3e50"/>`;
+      svg.innerHTML += `<rect x="${cx-1}" y="${bodyTop+20}" width="2" height="2" fill="${sc}" rx="1"/>`;
+      svg.innerHTML += `<rect x="${cx-1}" y="${bodyTop+28}" width="2" height="2" fill="${sc}" rx="1"/>`;
+    },
+    tank: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2+4}" y="${bodyTop}" width="${d.tw-8}" height="${d.th}" rx="3" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${s.skinColor}"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${s.skinColor}"/>`;
+    },
+    jersey: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop}" width="${d.tw}" height="${d.th}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<text x="${cx}" y="${bodyTop+d.th/2+4}" text-anchor="middle" fill="white" font-size="16" font-weight="bold" font-family="Arial">7</text>`;
+    },
+    armor: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2-2}" y="${bodyTop}" width="${d.tw+4}" height="${d.th}" rx="3" fill="#7f8c8d"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw-2}" y="${armTop}" width="${d.aw+4}" height="${armLen}" rx="3" fill="#95a5a6"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2-2}" y="${armTop}" width="${d.aw+4}" height="${armLen}" rx="3" fill="#95a5a6"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop+2}" width="${d.tw}" height="14" rx="2" fill="#bdc3c7"/>`;
+      svg.innerHTML += `<rect x="${cx-4}" y="${bodyTop+d.th/2-4}" width="8" height="8" rx="1" fill="${sc}"/>`;
+    },
+    labcoat: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2-4}" y="${bodyTop}" width="${d.tw+8}" height="${d.th+16}" rx="3" fill="white"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw-2}" y="${armTop}" width="${d.aw+2}" height="${armLen}" rx="4" fill="white"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw+2}" height="${armLen}" rx="4" fill="white"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop+10}" width="10" height="12" rx="2" fill="${sc}" opacity="0.4"/>`;
+    },
+    cape: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop}" width="${d.tw}" height="${d.th}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<path d="M${cx-d.tw/2-6} ${bodyTop-4} L${cx-d.tw/2-16} ${bodyTop+d.th+30} L${cx+d.tw/2+16} ${bodyTop+d.th+30} L${cx+d.tw/2+6} ${bodyTop-4} Z" fill="${scd}" opacity="0.7"/>`;
+    },
+    flannel: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop}" width="${d.tw}" height="${d.th}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
+      for (let i = 0; i < d.th; i += 8) {
+        svg.innerHTML += `<line x1="${cx-d.tw/2}" y1="${bodyTop+i}" x2="${cx+d.tw/2}" y2="${bodyTop+i}" stroke="${scd}" stroke-width="1" opacity="0.4"/>`;
+      }
+      for (let i = 0; i < d.tw; i += 8) {
+        svg.innerHTML += `<line x1="${cx-d.tw/2+i}" y1="${bodyTop}" x2="${cx-d.tw/2+i}" y2="${bodyTop+d.th}" stroke="${scd}" stroke-width="1" opacity="0.3"/>`;
+      }
+    },
+    jacket: () => {
+      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop}" width="${d.tw}" height="${d.th}" rx="4" fill="${sc}"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw-2}" y="${armTop}" width="${d.aw+2}" height="${armLen}" rx="5" fill="${scd}"/>`;
+      svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw+2}" height="${armLen}" rx="5" fill="${scd}"/>`;
+      svg.innerHTML += `<line x1="${cx}" y1="${bodyTop+4}" x2="${cx}" y2="${bodyTop+d.th-4}" stroke="${darken(sc,50)}" stroke-width="2"/>`;
+      svg.innerHTML += `<rect x="${cx-d.tw/2+2}" y="${bodyTop+2}" width="${d.tw/2-4}" height="8" rx="2" fill="${scd}"/>`;
+      svg.innerHTML += `<rect x="${cx+2}" y="${bodyTop+2}" width="${d.tw/2-4}" height="8" rx="2" fill="${scd}"/>`;
+    },
+  };
+  (shirtFn[s.shirt] || shirtFn.tee)();
+}
+
+function drawBody(svg, s) {
+  const d = getBodyDims(s.body);
+  const cx = 100, bodyTop = 60;
+  const sk = s.skinColor;
+  const skd = darken(sk, 20);
+  const armLen = d.al;
+  const armTop = bodyTop + 4;
+
+  svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw}" y="${armTop+armLen-2}" width="${d.aw}" height="${d.aw}" rx="3" fill="${sk}"/>`;
+  svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop+armLen-2}" width="${d.aw}" height="${d.aw}" rx="3" fill="${sk}"/>`;
+
+  svg.innerHTML += `<rect x="${cx-6}" y="${bodyTop-10}" width="12" height="14" rx="2" fill="${sk}"/>`;
+}
+
+function drawHead(svg, s) {
+  const cx = 100, headCY = 30;
+  const sk = s.skinColor;
+  const skd = darken(sk, 20);
+
+  const heads = {
+    standard: () => {
+      svg.innerHTML += `<rect x="${cx-22}" y="${headCY-20}" width="44" height="40" rx="6" fill="${sk}"/>`;
+      svg.innerHTML += `<rect x="${cx-22}" y="${headCY+14}" width="44" height="6" rx="2" fill="${skd}"/>`;
+    },
+    round: () => {
+      svg.innerHTML += `<circle cx="${cx}" cy="${headCY}" r="24" fill="${sk}"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY+18}" rx="18" ry="4" fill="${skd}" opacity="0.4"/>`;
+    },
+    rthro: () => {
+      svg.innerHTML += `<rect x="${cx-18}" y="${headCY-22}" width="36" height="44" rx="10" fill="${sk}"/>`;
+    },
+    square: () => {
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-22}" width="48" height="44" rx="2" fill="${sk}"/>`;
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY+16}" width="48" height="6" fill="${skd}"/>`;
+    },
+    pointy: () => {
+      svg.innerHTML += `<polygon points="${cx},${headCY-26} ${cx+24},${headCY+20} ${cx-24},${headCY+20}" fill="${sk}"/>`;
+    },
+    oval: () => {
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY}" rx="20" ry="26" fill="${sk}"/>`;
+    },
+    alien: () => {
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY+2}" rx="26" ry="22" fill="#7dcea0"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-8}" rx="22" ry="12" fill="#58d68d"/>`;
+    },
+    pumpkin: () => {
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY+2}" rx="26" ry="22" fill="#e67e22"/>`;
+      svg.innerHTML += `<rect x="${cx-3}" y="${headCY-22}" width="6" height="8" rx="2" fill="#27ae60"/>`;
+      svg.innerHTML += `<line x1="${cx}" y1="${headCY-10}" x2="${cx}" y2="${headCY+20}" stroke="${darken('#e67e22',30)}" stroke-width="1.5"/>`;
+      svg.innerHTML += `<line x1="${cx-12}" y1="${headCY-6}" x2="${cx-10}" y2="${headCY+20}" stroke="${darken('#e67e22',30)}" stroke-width="1"/>`;
+      svg.innerHTML += `<line x1="${cx+12}" y1="${headCY-6}" x2="${cx+10}" y2="${headCY+20}" stroke="${darken('#e67e22',30)}" stroke-width="1"/>`;
+    },
+    candy: () => {
+      svg.innerHTML += `<circle cx="${cx}" cy="${headCY}" r="24" fill="#ff69b4"/>`;
+      svg.innerHTML += `<path d="M${cx-18} ${headCY-14} Q${cx-10} ${headCY-20} ${cx} ${headCY-14} Q${cx+10} ${headCY-20} ${cx+18} ${headCY-14}" fill="white" opacity="0.4"/>`;
+    },
+    diamond: () => {
+      svg.innerHTML += `<polygon points="${cx},${headCY-26} ${cx+24},${headCY} ${cx},${headCY+26} ${cx-24},${headCY}" fill="${sk}"/>`;
+    },
+  };
+  (heads[s.head] || heads.standard)();
+}
+
+function drawHair(svg, s) {
+  if (s.hair === 'none') return;
+  const cx = 100, headCY = 30;
+  const hc = s.hairColor;
+  const hcd = darken(hc, 25);
+
+  const hairs = {
+    messy: () => {
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="18" rx="6" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx-26}" y="${headCY-20}" width="12" height="14" rx="4" fill="${hcd}"/>`;
+      svg.innerHTML += `<rect x="${cx+14}" y="${headCY-20}" width="12" height="14" rx="4" fill="${hcd}"/>`;
+      svg.innerHTML += `<rect x="${cx-8}" y="${headCY-28}" width="16" height="10" rx="4" fill="${hc}"/>`;
+    },
+    spiky: () => {
+      svg.innerHTML += `<polygon points="${cx-20},${headCY-18} ${cx-14},${headCY-36} ${cx-8},${headCY-18}" fill="${hc}"/>`;
+      svg.innerHTML += `<polygon points="${cx-8},${headCY-18} ${cx},${headCY-40} ${cx+8},${headCY-18}" fill="${hcd}"/>`;
+      svg.innerHTML += `<polygon points="${cx+8},${headCY-18} ${cx+14},${headCY-36} ${cx+20},${headCY-18}" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx-22}" y="${headCY-20}" width="44" height="8" rx="3" fill="${hc}"/>`;
+    },
+    ponytail: () => {
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="14" rx="6" fill="${hc}"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY+28}" rx="8" ry="20" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx-4}" y="${headCY+6}" width="8" height="8" fill="${hc}"/>`;
+    },
+    curly: () => {
+      for (let i = -2; i <= 2; i++) {
+        svg.innerHTML += `<circle cx="${cx+i*10}" cy="${headCY-18}" r="9" fill="${i%2===0?hc:hcd}"/>`;
+      }
+      svg.innerHTML += `<circle cx="${cx-22}" cy="${headCY-6}" r="7" fill="${hc}"/>`;
+      svg.innerHTML += `<circle cx="${cx+22}" cy="${headCY-6}" r="7" fill="${hc}"/>`;
+    },
+    bun: () => {
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="14" rx="6" fill="${hc}"/>`;
+      svg.innerHTML += `<circle cx="${cx}" cy="${headCY-28}" r="12" fill="${hc}"/>`;
+      svg.innerHTML += `<circle cx="${cx}" cy="${headCY-28}" r="6" fill="${hcd}"/>`;
+    },
+    mohawk: () => {
+      svg.innerHTML += `<rect x="${cx-6}" y="${headCY-38}" width="12" height="22" rx="4" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx-4}" y="${headCY-42}" width="8" height="10" rx="3" fill="${hcd}"/>`;
+    },
+    sidepart: () => {
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="16" rx="5" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx-26}" y="${headCY-20}" width="16" height="20" rx="5" fill="${hcd}"/>`;
+    },
+    afro: () => {
+      svg.innerHTML += `<circle cx="${cx}" cy="${headCY-10}" r="32" fill="${hc}"/>`;
+      svg.innerHTML += `<circle cx="${cx}" cy="${headCY-10}" r="26" fill="${hcd}" opacity="0.3"/>`;
+    },
+    pigtails: () => {
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="14" rx="6" fill="${hc}"/>`;
+      svg.innerHTML += `<ellipse cx="${cx-26}" cy="${headCY+6}" rx="8" ry="18" fill="${hc}"/>`;
+      svg.innerHTML += `<ellipse cx="${cx+26}" cy="${headCY+6}" rx="8" ry="18" fill="${hc}"/>`;
+    },
+  };
+  (hairs[s.hair] || (() => {}))();
+}
+
+function drawFace(svg, s) {
+  const cx = 100, headCY = 30;
+
+  const faces = {
+    smile: () => {
+      svg.innerHTML += `<circle cx="${cx-8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<circle cx="${cx+8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<path d="M${cx-8} ${headCY+6} Q${cx} ${headCY+14} ${cx+8} ${headCY+6}" stroke="#1a1a1a" fill="none" stroke-width="2" stroke-linecap="round"/>`;
+    },
+    worried: () => {
+      svg.innerHTML += `<circle cx="${cx-8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<circle cx="${cx+8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<path d="M${cx-8} ${headCY+10} Q${cx} ${headCY+4} ${cx+8} ${headCY+10}" stroke="#1a1a1a" fill="none" stroke-width="2" stroke-linecap="round"/>`;
+      svg.innerHTML += `<line x1="${cx-12}" y1="${headCY-12}" x2="${cx-4}" y2="${headCY-10}" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>`;
+      svg.innerHTML += `<line x1="${cx+12}" y1="${headCY-12}" x2="${cx+4}" y2="${headCY-10}" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>`;
+    },
+    sunglasses: () => {
+      svg.innerHTML += `<rect x="${cx-18}" y="${headCY-8}" width="14" height="10" rx="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<rect x="${cx+4}" y="${headCY-8}" width="14" height="10" rx="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<line x1="${cx-4}" y1="${headCY-3}" x2="${cx+4}" y2="${headCY-3}" stroke="#1a1a1a" stroke-width="2"/>`;
+      svg.innerHTML += `<line x1="${cx-18}" y1="${headCY-4}" x2="${cx-24}" y2="${headCY-6}" stroke="#1a1a1a" stroke-width="1.5"/>`;
+      svg.innerHTML += `<line x1="${cx+18}" y1="${headCY-4}" x2="${cx+24}" y2="${headCY-6}" stroke="#1a1a1a" stroke-width="1.5"/>`;
+      svg.innerHTML += `<path d="M${cx-6} ${headCY+8} Q${cx} ${headCY+12} ${cx+6} ${headCY+8}" stroke="#1a1a1a" fill="none" stroke-width="1.5" stroke-linecap="round"/>`;
+    },
+    bandana: () => {
+      svg.innerHTML += `<circle cx="${cx-8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<circle cx="${cx+8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<path d="M${cx-6} ${headCY+6} Q${cx} ${headCY+12} ${cx+6} ${headCY+6}" stroke="#1a1a1a" fill="none" stroke-width="1.5" stroke-linecap="round"/>`;
+      svg.innerHTML += `<rect x="${cx-6}" y="${headCY+2}" width="12" height="6" rx="2" fill="#e74c3c"/>`;
+    },
+    freckles: () => {
+      svg.innerHTML += `<circle cx="${cx-8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<circle cx="${cx+8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<path d="M${cx-6} ${headCY+6} Q${cx} ${headCY+12} ${cx+6} ${headCY+6}" stroke="#1a1a1a" fill="none" stroke-width="1.5"/>`;
+      const spots = [[-14,2],[-12,6],[-16,6],[14,2],[12,6],[16,6]];
+      spots.forEach(([dx,dy]) => {
+        svg.innerHTML += `<circle cx="${cx+dx}" cy="${headCY+dy}" r="1.5" fill="#c68642" opacity="0.6"/>`;
+      });
+    },
+    blush: () => {
+      svg.innerHTML += `<circle cx="${cx-8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<circle cx="${cx+8}" cy="${headCY-4}" r="3" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<path d="M${cx-4} ${headCY+6} Q${cx} ${headCY+10} ${cx+4} ${headCY+6}" stroke="#1a1a1a" fill="none" stroke-width="1.5"/>`;
+      svg.innerHTML += `<ellipse cx="${cx-14}" cy="${headCY+4}" rx="6" ry="4" fill="#ff9999" opacity="0.45"/>`;
+      svg.innerHTML += `<ellipse cx="${cx+14}" cy="${headCY+4}" rx="6" ry="4" fill="#ff9999" opacity="0.45"/>`;
+    },
+    shocked: () => {
+      svg.innerHTML += `<circle cx="${cx-8}" cy="${headCY-4}" r="4" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<circle cx="${cx-8}" cy="${headCY-4}" r="2" fill="white"/>`;
+      svg.innerHTML += `<circle cx="${cx+8}" cy="${headCY-4}" r="4" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<circle cx="${cx+8}" cy="${headCY-4}" r="2" fill="white"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY+10}" rx="5" ry="7" fill="#1a1a1a"/>`;
+    },
+    cyclops: () => {
+      svg.innerHTML += `<circle cx="${cx}" cy="${headCY-2}" r="8" fill="white"/>`;
+      svg.innerHTML += `<circle cx="${cx}" cy="${headCY-2}" r="5" fill="#3498db"/>`;
+      svg.innerHTML += `<circle cx="${cx}" cy="${headCY-2}" r="2.5" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<path d="M${cx-6} ${headCY+10} Q${cx} ${headCY+14} ${cx+6} ${headCY+10}" stroke="#1a1a1a" fill="none" stroke-width="1.5"/>`;
+    },
+    robot_visor: () => {
+      svg.innerHTML += `<rect x="${cx-18}" y="${headCY-6}" width="36" height="10" rx="4" fill="#2c3e50"/>`;
+      svg.innerHTML += `<rect x="${cx-14}" y="${headCY-4}" width="8" height="6" rx="2" fill="#00ff88"/>`;
+      svg.innerHTML += `<rect x="${cx+6}" y="${headCY-4}" width="8" height="6" rx="2" fill="#00ff88"/>`;
+      svg.innerHTML += `<rect x="${cx-4}" y="${headCY+8}" width="8" height="3" rx="1" fill="#555"/>`;
+    },
+    derp: () => {
+      svg.innerHTML += `<circle cx="${cx-9}" cy="${headCY-4}" r="4" fill="white"/>`;
+      svg.innerHTML += `<circle cx="${cx-11}" cy="${headCY-5}" r="2" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<circle cx="${cx+9}" cy="${headCY-6}" r="4" fill="white"/>`;
+      svg.innerHTML += `<circle cx="${cx+7}" cy="${headCY-4}" r="2" fill="#1a1a1a"/>`;
+      svg.innerHTML += `<path d="M${cx-8} ${headCY+6} L${cx+8} ${headCY+10}" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/>`;
+      svg.innerHTML += `<line x1="${cx+4}" y1="${headCY+8}" x2="${cx+10}" y2="${headCY+6}" stroke="#e74c3c" stroke-width="2" stroke-linecap="round"/>`;
+    },
+  };
+  (faces[s.face] || faces.smile)();
+}
+
+function drawAccessory(svg, s) {
+  if (s.accessory === 'none') return;
+  const cx = 100, headCY = 30;
+  const d = getBodyDims(s.body);
+  const bodyTop = 60;
+
+  const accs = {
+    crown: () => {
+      const cy = headCY - 24;
+      svg.innerHTML += `<polygon points="${cx-16},${cy+10} ${cx-16},${cy} ${cx-10},${cy+6} ${cx-4},${cy-4} ${cx},${cy+4} ${cx+4},${cy-4} ${cx+10},${cy+6} ${cx+16},${cy} ${cx+16},${cy+10}" fill="#f1c40f"/>`;
+      svg.innerHTML += `<rect x="${cx-16}" y="${cy+8}" width="32" height="4" fill="#d4ac0d"/>`;
+      svg.innerHTML += `<circle cx="${cx-10}" cy="${cy+3}" r="2" fill="#e74c3c"/>`;
+      svg.innerHTML += `<circle cx="${cx}" cy="${cy+1}" r="2" fill="#3498db"/>`;
+      svg.innerHTML += `<circle cx="${cx+10}" cy="${cy+3}" r="2" fill="#2ecc71"/>`;
+    },
+    headphones: () => {
+      svg.innerHTML += `<path d="M${cx-22} ${headCY-4} Q${cx-22} ${headCY-28} ${cx} ${headCY-28} Q${cx+22} ${headCY-28} ${cx+22} ${headCY-4}" stroke="#333" fill="none" stroke-width="4" stroke-linecap="round"/>`;
+      svg.innerHTML += `<rect x="${cx-26}" y="${headCY-8}" width="8" height="16" rx="4" fill="#333"/>`;
+      svg.innerHTML += `<rect x="${cx+18}" y="${headCY-8}" width="8" height="16" rx="4" fill="#333"/>`;
+      svg.innerHTML += `<rect x="${cx-25}" y="${headCY-5}" width="6" height="10" rx="3" fill="#e74c3c"/>`;
+      svg.innerHTML += `<rect x="${cx+19}" y="${headCY-5}" width="6" height="10" rx="3" fill="#e74c3c"/>`;
+    },
+    backpack: () => {
+      const bx = cx + d.tw/2 + 2;
+      svg.innerHTML += `<rect x="${bx}" y="${bodyTop+4}" width="16" height="28" rx="4" fill="#8e44ad"/>`;
+      svg.innerHTML += `<rect x="${bx+3}" y="${bodyTop+8}" width="10" height="8" rx="2" fill="#9b59b6"/>`;
+      svg.innerHTML += `<line x1="${bx+2}" y1="${bodyTop+4}" x2="${cx+d.tw/2-2}" y2="${bodyTop+6}" stroke="#6c3483" stroke-width="2" stroke-linecap="round"/>`;
+      svg.innerHTML += `<line x1="${bx+2}" y1="${bodyTop+28}" x2="${cx+d.tw/2-2}" y2="${bodyTop+d.th-4}" stroke="#6c3483" stroke-width="2" stroke-linecap="round"/>`;
+    },
+    wings: () => {
+      const wy = bodyTop + 10;
+      svg.innerHTML += `<path d="M${cx-d.tw/2-4} ${wy} Q${cx-d.tw/2-36} ${wy-20} ${cx-d.tw/2-28} ${wy+30} Q${cx-d.tw/2-16} ${wy+10} ${cx-d.tw/2-4} ${wy+20}" fill="rgba(255,255,255,0.6)"/>`;
+      svg.innerHTML += `<path d="M${cx+d.tw/2+4} ${wy} Q${cx+d.tw/2+36} ${wy-20} ${cx+d.tw/2+28} ${wy+30} Q${cx+d.tw/2+16} ${wy+10} ${cx+d.tw/2+4} ${wy+20}" fill="rgba(255,255,255,0.6)"/>`;
+    },
+    sword: () => {
+      const sx = cx + d.tw/2 + d.aw + 4;
+      const sy = bodyTop;
+      svg.innerHTML += `<rect x="${sx}" y="${sy-30}" width="4" height="50" rx="1" fill="#bdc3c7"/>`;
+      svg.innerHTML += `<rect x="${sx-4}" y="${sy+16}" width="12" height="5" rx="2" fill="#8B4513"/>`;
+      svg.innerHTML += `<rect x="${sx}" y="${sy+20}" width="4" height="10" rx="1" fill="#5c3317"/>`;
+      svg.innerHTML += `<polygon points="${sx+2},${sy-30} ${sx-1},${sy-36} ${sx+5},${sy-36}" fill="#ecf0f1"/>`;
+    },
+    shield: () => {
+      const sx = cx - d.tw/2 - d.aw - 16;
+      const sy = bodyTop + 10;
+      svg.innerHTML += `<path d="M${sx} ${sy} L${sx+20} ${sy} L${sx+20} ${sy+20} L${sx+10} ${sy+30} L${sx} ${sy+20} Z" fill="#2c3e50"/>`;
+      svg.innerHTML += `<path d="M${sx+4} ${sy+4} L${sx+16} ${sy+4} L${sx+16} ${sy+18} L${sx+10} ${sy+26} L${sx+4} ${sy+18} Z" fill="#3498db"/>`;
+      svg.innerHTML += `<rect x="${sx+8}" y="${sy+6}" width="4" height="16" fill="#f1c40f"/>`;
+      svg.innerHTML += `<rect x="${sx+4}" y="${sy+10}" width="12" height="4" fill="#f1c40f"/>`;
+    },
+    guitar: () => {
+      const gx = cx - d.tw/2 - d.aw - 10;
+      const gy = bodyTop;
+      svg.innerHTML += `<rect x="${gx+6}" y="${gy-30}" width="3" height="60" fill="#8B4513"/>`;
+      svg.innerHTML += `<ellipse cx="${gx+8}" cy="${gy+34}" rx="10" ry="14" fill="#d4a543"/>`;
+      svg.innerHTML += `<ellipse cx="${gx+8}" cy="${gy+34}" rx="3" ry="4" fill="#2c1b0e"/>`;
+      svg.innerHTML += `<rect x="${gx+2}" y="${gy-32}" width="12" height="6" rx="2" fill="#5c3317"/>`;
+    },
+    jetpack: () => {
+      const jx = cx;
+      const jy = bodyTop + 10;
+      svg.innerHTML += `<rect x="${jx-16}" y="${jy}" width="10" height="28" rx="4" fill="#7f8c8d"/>`;
+      svg.innerHTML += `<rect x="${jx+6}" y="${jy}" width="10" height="28" rx="4" fill="#7f8c8d"/>`;
+      svg.innerHTML += `<rect x="${jx-14}" y="${jy+2}" width="6" height="8" rx="2" fill="#e74c3c"/>`;
+      svg.innerHTML += `<rect x="${jx+8}" y="${jy+2}" width="6" height="8" rx="2" fill="#e74c3c"/>`;
+      svg.innerHTML += `<polygon points="${jx-12},${jy+28} ${jx-8},${jy+44} ${jx-16},${jy+44}" fill="#f39c12" opacity="0.8"/>`;
+      svg.innerHTML += `<polygon points="${jx+12},${jy+28} ${jx+16},${jy+44} ${jx+8},${jy+44}" fill="#f39c12" opacity="0.8"/>`;
+    },
+    halo: () => {
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-28}" rx="18" ry="5" fill="none" stroke="#f1c40f" stroke-width="3"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-28}" rx="14" ry="3" fill="#f9e574" opacity="0.3"/>`;
+    },
+  };
+  (accs[s.accessory] || (() => {}))();
+}
+
+function renderAvatar(target, st, w, h) {
+  const width = w || 200;
+  const height = h || 320;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  target.innerHTML = '';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('xmlns', svgNS);
+  svg.setAttribute('viewBox', '0 0 200 320');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+
+  const g = document.createElementNS(svgNS, 'g');
+  svg.appendChild(g);
+
+  drawShoes(g, st);
+  drawLegs(g, st);
+  drawPants(g, st);
+  drawShirt(g, st);
+  drawBody(g, st);
+  drawHead(g, st);
+  drawHair(g, st);
+  drawFace(g, st);
+  drawAccessory(g, st);
+
+  target.appendChild(svg);
+  return svg;
+}
+
+// ============================================================
+// 4. UI
+// ============================================================
+
+function buildSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = `<div class="sidebar-title">Avatar<br>Editor</div>`;
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (cat.id === activeCategory ? ' active' : '');
+    btn.innerHTML = `<span class="icon">${cat.icon}</span>${cat.label}`;
+    btn.onclick = () => setCategory(cat.id);
+    sb.appendChild(btn);
+  });
+}
+
+function buildMobileTabs() {
+  const mt = document.getElementById('mobileTabs');
+  mt.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'mob-tab' + (cat.id === activeCategory ? ' active' : '');
+    btn.innerHTML = `<span class="icon">${cat.icon}</span>${cat.label}`;
+    btn.onclick = () => setCategory(cat.id);
+    mt.appendChild(btn);
+  });
+}
+
+function buildPicker() {
+  const pk = document.getElementById('picker');
+  const cat = CATEGORIES.find(c => c.id === activeCategory);
+  pk.innerHTML = `<div class="picker-title">${cat.icon} ${cat.label.toUpperCase()}</div>`;
+
+  const grid = document.createElement('div');
+  grid.className = 'item-grid';
+
+  cat.items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'item-card' + (state[cat.id] === item.id ? ' selected' : '');
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'thumb';
+    renderThumb(thumbWrap, cat.id, item.id);
+    card.appendChild(thumbWrap);
+    const lbl = document.createElement('div');
+    lbl.className = 'label';
+    lbl.textContent = item.label;
+    card.appendChild(lbl);
+    card.onclick = () => {
+      state[cat.id] = item.id;
+      buildPicker();
+      renderMain();
+    };
+    grid.appendChild(card);
+  });
+  pk.appendChild(grid);
+
+  if (cat.hasColor) {
+    buildColorPicker(pk, cat.hasColor);
+  }
+}
+
+function renderThumb(el, catId, itemId) {
+  const thumbState = { ...state };
+  thumbState[catId] = itemId;
+  renderAvatar(el, thumbState, 60, 60);
+  const svg = el.querySelector('svg');
+  if (svg) {
+    svg.setAttribute('width', 60);
+    svg.setAttribute('height', 60);
+  }
+}
+
+function buildColorPicker(parent, colorType) {
+  const section = document.createElement('div');
+  section.className = 'color-section';
+
+  const colorMap = {
+    skin: { key: 'skinColor', swatches: SKIN_COLORS, label: 'Skin Tone' },
+    hair: { key: 'hairColor', swatches: HAIR_COLORS, label: 'Hair Color' },
+    shirt: { key: 'shirtColor', swatches: SHIRT_COLORS, label: 'Shirt Color' },
+    pants: { key: 'pantsColor', swatches: PANTS_COLORS, label: 'Pants Color' },
+  };
+  const cfg = colorMap[colorType];
+  if (!cfg) return;
+
+  section.innerHTML = `<div class="color-section-title">${cfg.label}</div>`;
+  const row = document.createElement('div');
+  row.className = 'color-row';
+
+  cfg.swatches.forEach(c => {
+    const sw = document.createElement('div');
+    sw.className = 'color-swatch' + (state[cfg.key] === c ? ' active' : '');
+    sw.style.background = c;
+    sw.onclick = () => {
+      state[cfg.key] = c;
+      buildPicker();
+      renderMain();
+    };
+    row.appendChild(sw);
+  });
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'hex-input';
+  inp.value = state[cfg.key];
+  inp.placeholder = '#hex';
+  inp.addEventListener('input', () => {
+    const v = inp.value.trim();
+    if (/^#[0-9a-fA-F]{3,6}$/.test(v)) {
+      state[cfg.key] = v;
+      renderMain();
+      row.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    }
+  });
+  row.appendChild(inp);
+  section.appendChild(row);
+  parent.appendChild(section);
+}
+
+function setCategory(catId) {
+  activeCategory = catId;
+  buildSidebar();
+  buildMobileTabs();
+  buildPicker();
+}
+
+function renderMain() {
+  renderAvatar(document.getElementById('avatarWrap'), state);
+}
+
+// ============================================================
+// 5. CONTROLS
+// ============================================================
+
+function randomize() {
+  CATEGORIES.forEach(cat => {
+    const items = cat.items;
+    state[cat.id] = items[Math.floor(Math.random() * items.length)].id;
+  });
+  state.skinColor = SKIN_COLORS[Math.floor(Math.random() * SKIN_COLORS.length)];
+  state.hairColor = HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)];
+  state.shirtColor = SHIRT_COLORS[Math.floor(Math.random() * SHIRT_COLORS.length)];
+  state.pantsColor = PANTS_COLORS[Math.floor(Math.random() * PANTS_COLORS.length)];
+  buildPicker();
+  renderMain();
+}
+
+function resetAvatar() {
+  Object.assign(state, DEFAULTS);
+  buildPicker();
+  renderMain();
+}
+
+function savePNG() {
+  const wrap = document.createElement('div');
+  const svg = renderAvatar(wrap, state, 400, 640);
+
+  const serializer = new XMLSerializer();
+  const svgStr = serializer.serializeToString(svg);
+  const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(svgBlob);
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 640;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1a3038';
+    ctx.fillRect(0, 0, 400, 640);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+
+    canvas.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'avatar.png';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }, 'image/png');
+  };
+  img.src = url;
+
+  showToast('Avatar saved!');
+}
+
+function shareLink() {
+  const params = new URLSearchParams();
+  for (const key in state) {
+    if (state[key] !== DEFAULTS[key]) {
+      params.set(key, state[key]);
+    }
+  }
+  const username = document.getElementById('usernameInput').value;
+  if (username && username !== 'Player1') params.set('name', username);
+
+  const url = window.location.origin + window.location.pathname + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('Link copied to clipboard!');
+  }).catch(() => {
+    showToast('Link: ' + url);
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.toString()) {
+    CATEGORIES.forEach(cat => {
+      const v = params.get(cat.id);
+      if (v && cat.items.some(i => i.id === v)) state[cat.id] = v;
+    });
+    ['skinColor','hairColor','shirtColor','pantsColor'].forEach(k => {
+      const v = params.get(k);
+      if (v && /^#[0-9a-fA-F]{3,6}$/.test(v)) state[k] = v;
+    });
+    const name = params.get('name');
+    if (name) {
+      document.getElementById('usernameInput').value = name.slice(0, 20);
+    }
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+
+loadFromURL();
+buildSidebar();
+buildMobileTabs();
+buildPicker();
+renderMain();
+</script>
+</body>
+</html>
