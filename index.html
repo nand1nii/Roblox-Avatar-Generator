@@ -824,6 +824,17 @@ function drawNecklace(svg, s) {
   svg.innerHTML += `<circle cx="${cx}" cy="${bodyTop+20}" r="2" fill="#e74c3c"/>`;
 }
 
+function drawHairBack(svg, s) {
+  if (s.hair !== 'afro') return;
+  const cx = 100, headCY = 30;
+  const hc = s.hairColor;
+  const hcd = darken(hc, 25);
+  svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-16}" rx="34" ry="20" fill="${hc}"/>`;
+  svg.innerHTML += `<ellipse cx="${cx-24}" cy="${headCY-4}" rx="12" ry="16" fill="${hc}"/>`;
+  svg.innerHTML += `<ellipse cx="${cx+24}" cy="${headCY-4}" rx="12" ry="16" fill="${hc}"/>`;
+  svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-18}" rx="28" ry="14" fill="${hcd}" opacity="0.25"/>`;
+}
+
 function drawHead(svg, s) {
   const cx = 100, headCY = 30;
   const sk = s.skinColor;
@@ -832,18 +843,15 @@ function drawHead(svg, s) {
   const heads = {
     standard: () => {
       svg.innerHTML += `<rect x="${cx-22}" y="${headCY-20}" width="44" height="40" rx="6" fill="${sk}"/>`;
-      svg.innerHTML += `<rect x="${cx-22}" y="${headCY+14}" width="44" height="6" rx="2" fill="${skd}"/>`;
     },
     round: () => {
       svg.innerHTML += `<circle cx="${cx}" cy="${headCY}" r="24" fill="${sk}"/>`;
-      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY+18}" rx="18" ry="4" fill="${skd}" opacity="0.4"/>`;
     },
     rthro: () => {
       svg.innerHTML += `<rect x="${cx-18}" y="${headCY-22}" width="36" height="44" rx="10" fill="${sk}"/>`;
     },
     square: () => {
       svg.innerHTML += `<rect x="${cx-24}" y="${headCY-22}" width="48" height="44" rx="2" fill="${sk}"/>`;
-      svg.innerHTML += `<rect x="${cx-24}" y="${headCY+16}" width="48" height="6" fill="${skd}"/>`;
     },
     pointy: () => {
       svg.innerHTML += `<polygon points="${cx},${headCY-26} ${cx+24},${headCY+20} ${cx-24},${headCY+20}" fill="${sk}"/>`;
@@ -920,12 +928,7 @@ function drawHair(svg, s) {
       svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="16" rx="5" fill="${hc}"/>`;
       svg.innerHTML += `<rect x="${cx-26}" y="${headCY-20}" width="16" height="20" rx="5" fill="${hcd}"/>`;
     },
-    afro: () => {
-      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-16}" rx="34" ry="20" fill="${hc}"/>`;
-      svg.innerHTML += `<ellipse cx="${cx-24}" cy="${headCY-4}" rx="12" ry="16" fill="${hc}"/>`;
-      svg.innerHTML += `<ellipse cx="${cx+24}" cy="${headCY-4}" rx="12" ry="16" fill="${hc}"/>`;
-      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-18}" rx="28" ry="14" fill="${hcd}" opacity="0.25"/>`;
-    },
+    afro: () => {},
     pigtails: () => {
       svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="14" rx="6" fill="${hc}"/>`;
       svg.innerHTML += `<ellipse cx="${cx-26}" cy="${headCY+6}" rx="8" ry="18" fill="${hc}"/>`;
@@ -935,7 +938,6 @@ function drawHair(svg, s) {
       svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="16" rx="6" fill="${hc}"/>`;
       svg.innerHTML += `<rect x="${cx-26}" y="${headCY-18}" width="12" height="60" rx="4" fill="${hc}"/>`;
       svg.innerHTML += `<rect x="${cx+14}" y="${headCY-18}" width="12" height="60" rx="4" fill="${hc}"/>`;
-      svg.innerHTML += `<rect x="${cx-26}" y="${headCY-18}" width="12" height="60" rx="4" fill="${hcd}" opacity="0.25"/>`;
     },
     longcurly: () => {
       svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="16" rx="6" fill="${hc}"/>`;
@@ -1119,6 +1121,7 @@ function renderAvatar(target, st, w, h) {
   drawOverallsBib(g, st);
   drawBody(g, st);
   drawNecklace(g, st);
+  drawHairBack(g, st);
   drawHead(g, st);
   drawHair(g, st);
   drawFace(g, st);
