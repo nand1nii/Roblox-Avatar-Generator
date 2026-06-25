@@ -390,6 +390,8 @@ const CATEGORIES = [
       { id: 'sidepart', label: 'Side Part' },
       { id: 'afro', label: 'Afro' },
       { id: 'pigtails', label: 'Pigtails' },
+      { id: 'longstraight', label: 'Long Straight' },
+      { id: 'longcurly', label: 'Long Curly' },
     ]
   },
   {
@@ -434,7 +436,7 @@ const CATEGORIES = [
       { id: 'hightops', label: 'High-Tops' },
       { id: 'loafers', label: 'Loafers' },
       { id: 'cleats', label: 'Cleats' },
-      { id: 'none', label: 'None' },
+      { id: 'moccasins', label: 'Moccasins' },
       { id: 'platforms', label: 'Platforms' },
       { id: 'slippers', label: 'Slippers' },
       { id: 'crocs', label: 'Crocs' },
@@ -447,12 +449,12 @@ const CATEGORIES = [
       { id: 'none', label: 'None' },
       { id: 'crown', label: 'Crown' },
       { id: 'headphones', label: 'Headphones' },
-      { id: 'backpack', label: 'Backpack' },
+      { id: 'slingbag', label: 'Sling Bag' },
       { id: 'wings', label: 'Wings' },
       { id: 'sword', label: 'Sword' },
       { id: 'shield', label: 'Shield' },
-      { id: 'guitar', label: 'Guitar' },
-      { id: 'jetpack', label: 'Jetpack' },
+      { id: 'rose', label: 'Rose' },
+      { id: 'necklace', label: 'Necklace' },
       { id: 'halo', label: 'Halo' },
     ]
   },
@@ -540,10 +542,14 @@ function drawShoes(svg, s) {
       svg.innerHTML += `<rect x="${rx-4}" y="${footY}" width="${shoeW}" height="${shoeH}" rx="3" fill="#4a2a10"/>`;
     },
     sandals: () => {
-      svg.innerHTML += `<rect x="${lx-4}" y="${footY+2}" width="${shoeW}" height="8" rx="3" fill="#c68642"/>`;
-      svg.innerHTML += `<rect x="${rx-4}" y="${footY+2}" width="${shoeW}" height="8" rx="3" fill="#c68642"/>`;
-      svg.innerHTML += `<line x1="${lx+d.lw/2-2}" y1="${footY-2}" x2="${lx+d.lw/2-2}" y2="${footY+6}" stroke="#a06030" stroke-width="2"/>`;
-      svg.innerHTML += `<line x1="${rx+d.lw/2-2}" y1="${footY-2}" x2="${rx+d.lw/2-2}" y2="${footY+6}" stroke="#a06030" stroke-width="2"/>`;
+      svg.innerHTML += `<rect x="${lx-4}" y="${footY-1}" width="${shoeW}" height="6" rx="2" fill="#c68642"/>`;
+      svg.innerHTML += `<rect x="${rx-4}" y="${footY-1}" width="${shoeW}" height="6" rx="2" fill="#c68642"/>`;
+      svg.innerHTML += `<rect x="${lx-4}" y="${footY+4}" width="${shoeW}" height="6" rx="2" fill="#a06030"/>`;
+      svg.innerHTML += `<rect x="${rx-4}" y="${footY+4}" width="${shoeW}" height="6" rx="2" fill="#a06030"/>`;
+      svg.innerHTML += `<line x1="${lx+d.lw/2}" y1="${footY-4}" x2="${lx}" y2="${footY}" stroke="#a06030" stroke-width="2"/>`;
+      svg.innerHTML += `<line x1="${lx+d.lw/2}" y1="${footY-4}" x2="${lx+d.lw}" y2="${footY}" stroke="#a06030" stroke-width="2"/>`;
+      svg.innerHTML += `<line x1="${rx+d.lw/2}" y1="${footY-4}" x2="${rx}" y2="${footY}" stroke="#a06030" stroke-width="2"/>`;
+      svg.innerHTML += `<line x1="${rx+d.lw/2}" y1="${footY-4}" x2="${rx+d.lw}" y2="${footY}" stroke="#a06030" stroke-width="2"/>`;
     },
     hightops: () => {
       const bh = 18;
@@ -566,7 +572,12 @@ function drawShoes(svg, s) {
         svg.innerHTML += `<rect x="${rx-2+i*7}" y="${footY+shoeH-2}" width="4" height="4" rx="1" fill="#666"/>`;
       }
     },
-    none: () => {},
+    moccasins: () => {
+      svg.innerHTML += `<rect x="${lx-3}" y="${footY-2}" width="${shoeW-2}" height="${shoeH}" rx="5" fill="#a0522d"/>`;
+      svg.innerHTML += `<rect x="${rx-3}" y="${footY-2}" width="${shoeW-2}" height="${shoeH}" rx="5" fill="#a0522d"/>`;
+      svg.innerHTML += `<path d="M${lx} ${footY+2} Q${lx+d.lw/2} ${footY-2} ${lx+d.lw} ${footY+2}" stroke="#7a3b1e" fill="none" stroke-width="1.5"/>`;
+      svg.innerHTML += `<path d="M${rx} ${footY+2} Q${rx+d.lw/2} ${footY-2} ${rx+d.lw} ${footY+2}" stroke="#7a3b1e" fill="none" stroke-width="1.5"/>`;
+    },
     platforms: () => {
       const ph = 18;
       svg.innerHTML += `<rect x="${lx-5}" y="${footY}" width="${shoeW+2}" height="${ph}" rx="4" fill="#9b59b6"/>`;
@@ -586,6 +597,15 @@ function drawShoes(svg, s) {
     },
   };
   (shoes[s.shoes] || shoes.sneakers)();
+}
+
+function drawCapeBack(svg, s) {
+  if (s.shirt !== 'cape') return;
+  const d = getBodyDims(s.body);
+  const cx = 100, bodyTop = 60;
+  const legTop = bodyTop + d.th;
+  const scd = darken(s.shirtColor, 30);
+  svg.innerHTML += `<path d="M${cx-d.tw/2-6} ${bodyTop-4} L${cx-d.tw/2-20} ${legTop+d.ll+10} L${cx+d.tw/2+20} ${legTop+d.ll+10} L${cx+d.tw/2+6} ${bodyTop-4} Z" fill="${scd}" opacity="0.7"/>`;
 }
 
 function drawLegs(svg, s) {
@@ -647,9 +667,6 @@ function drawPants(svg, s) {
     overalls: () => {
       svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
       svg.innerHTML += `<rect x="${rx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
-      svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${legTop-20}" width="${d.tw}" height="24" rx="2" fill="${pc}"/>`;
-      svg.innerHTML += `<line x1="${cx-d.tw/2+6}" y1="${legTop-20}" x2="${cx-8}" y2="${legTop-36}" stroke="${pcd}" stroke-width="3" stroke-linecap="round"/>`;
-      svg.innerHTML += `<line x1="${cx+d.tw/2-6}" y1="${legTop-20}" x2="${cx+8}" y2="${legTop-36}" stroke="${pcd}" stroke-width="3" stroke-linecap="round"/>`;
     },
     plaid: () => {
       svg.innerHTML += `<rect x="${lx}" y="${legTop}" width="${d.lw}" height="${d.ll}" rx="3" fill="${pc}"/>`;
@@ -735,7 +752,7 @@ function drawShirt(svg, s) {
       svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop}" width="${d.tw}" height="${d.th}" rx="4" fill="${sc}"/>`;
       svg.innerHTML += `<rect x="${cx-d.tw/2-d.aw}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
       svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop}" width="${d.aw}" height="${armLen}" rx="4" fill="${sc}"/>`;
-      svg.innerHTML += `<path d="M${cx-d.tw/2-6} ${bodyTop-4} L${cx-d.tw/2-16} ${bodyTop+d.th+30} L${cx+d.tw/2+16} ${bodyTop+d.th+30} L${cx+d.tw/2+6} ${bodyTop-4} Z" fill="${scd}" opacity="0.7"/>`;
+      svg.innerHTML += `<rect x="${cx-8}" y="${bodyTop}" width="16" height="6" rx="3" fill="${darken(sc,30)}"/>`;
     },
     flannel: () => {
       svg.innerHTML += `<rect x="${cx-d.tw/2}" y="${bodyTop}" width="${d.tw}" height="${d.th}" rx="4" fill="${sc}"/>`;
@@ -772,6 +789,39 @@ function drawBody(svg, s) {
   svg.innerHTML += `<rect x="${cx+d.tw/2}" y="${armTop+armLen-2}" width="${d.aw}" height="${d.aw}" rx="3" fill="${sk}"/>`;
 
   svg.innerHTML += `<rect x="${cx-6}" y="${bodyTop-10}" width="12" height="14" rx="2" fill="${sk}"/>`;
+}
+
+function drawOverallsBib(svg, s) {
+  if (s.pants !== 'overalls') return;
+  const d = getBodyDims(s.body);
+  const cx = 100, bodyTop = 60;
+  const legTop = bodyTop + d.th;
+  const pc = s.pantsColor;
+  const pcd = darken(pc, 25);
+  svg.innerHTML += `<rect x="${cx-d.tw/2+4}" y="${bodyTop+d.th*0.35}" width="${d.tw-8}" height="${d.th*0.65+4}" rx="3" fill="${pc}"/>`;
+  svg.innerHTML += `<line x1="${cx-d.tw/2+8}" y1="${bodyTop+d.th*0.35}" x2="${cx-10}" y2="${bodyTop+6}" stroke="${pcd}" stroke-width="3" stroke-linecap="round"/>`;
+  svg.innerHTML += `<line x1="${cx+d.tw/2-8}" y1="${bodyTop+d.th*0.35}" x2="${cx+10}" y2="${bodyTop+6}" stroke="${pcd}" stroke-width="3" stroke-linecap="round"/>`;
+  svg.innerHTML += `<rect x="${cx-4}" y="${bodyTop+d.th*0.5}" width="8" height="6" rx="2" fill="${pcd}"/>`;
+}
+
+function drawWingsBack(svg, s) {
+  if (s.accessory !== 'wings') return;
+  const d = getBodyDims(s.body);
+  const cx = 100, bodyTop = 60;
+  const wy = bodyTop + 4;
+  const wingW = 44, wingH = 60;
+  svg.innerHTML += `<path d="M${cx-d.tw/2-2} ${wy} Q${cx-d.tw/2-wingW} ${wy-30} ${cx-d.tw/2-wingW+6} ${wy+wingH} Q${cx-d.tw/2-wingW+20} ${wy+wingH-10} ${cx-d.tw/2-2} ${wy+30}" fill="rgba(255,255,255,0.55)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
+  svg.innerHTML += `<path d="M${cx+d.tw/2+2} ${wy} Q${cx+d.tw/2+wingW} ${wy-30} ${cx+d.tw/2+wingW-6} ${wy+wingH} Q${cx+d.tw/2+wingW-20} ${wy+wingH-10} ${cx+d.tw/2+2} ${wy+30}" fill="rgba(255,255,255,0.55)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>`;
+  svg.innerHTML += `<line x1="${cx-d.tw/2-6}" y1="${wy+6}" x2="${cx-d.tw/2-wingW+14}" y2="${wy+wingH-20}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>`;
+  svg.innerHTML += `<line x1="${cx+d.tw/2+6}" y1="${wy+6}" x2="${cx+d.tw/2+wingW-14}" y2="${wy+wingH-20}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>`;
+}
+
+function drawNecklace(svg, s) {
+  if (s.accessory !== 'necklace') return;
+  const cx = 100, bodyTop = 60;
+  svg.innerHTML += `<path d="M${cx-12} ${bodyTop-2} Q${cx-14} ${bodyTop+14} ${cx} ${bodyTop+20} Q${cx+14} ${bodyTop+14} ${cx+12} ${bodyTop-2}" stroke="#f1c40f" fill="none" stroke-width="2"/>`;
+  svg.innerHTML += `<circle cx="${cx}" cy="${bodyTop+20}" r="4" fill="#f1c40f"/>`;
+  svg.innerHTML += `<circle cx="${cx}" cy="${bodyTop+20}" r="2" fill="#e74c3c"/>`;
 }
 
 function drawHead(svg, s) {
@@ -843,9 +893,12 @@ function drawHair(svg, s) {
       svg.innerHTML += `<rect x="${cx-22}" y="${headCY-20}" width="44" height="8" rx="3" fill="${hc}"/>`;
     },
     ponytail: () => {
-      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="14" rx="6" fill="${hc}"/>`;
-      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY+28}" rx="8" ry="20" fill="${hc}"/>`;
-      svg.innerHTML += `<rect x="${cx-4}" y="${headCY+6}" width="8" height="8" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="16" rx="6" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx-26}" y="${headCY-18}" width="10" height="10" rx="4" fill="${hcd}"/>`;
+      svg.innerHTML += `<rect x="${cx+16}" y="${headCY-18}" width="10" height="10" rx="4" fill="${hcd}"/>`;
+      svg.innerHTML += `<circle cx="${cx+22}" cy="${headCY-14}" r="5" fill="${hcd}"/>`;
+      svg.innerHTML += `<ellipse cx="${cx+28}" cy="${headCY+8}" rx="6" ry="22" fill="${hc}"/>`;
+      svg.innerHTML += `<ellipse cx="${cx+28}" cy="${headCY+8}" rx="4" ry="18" fill="${hcd}" opacity="0.3"/>`;
     },
     curly: () => {
       for (let i = -2; i <= 2; i++) {
@@ -868,13 +921,29 @@ function drawHair(svg, s) {
       svg.innerHTML += `<rect x="${cx-26}" y="${headCY-20}" width="16" height="20" rx="5" fill="${hcd}"/>`;
     },
     afro: () => {
-      svg.innerHTML += `<circle cx="${cx}" cy="${headCY-10}" r="32" fill="${hc}"/>`;
-      svg.innerHTML += `<circle cx="${cx}" cy="${headCY-10}" r="26" fill="${hcd}" opacity="0.3"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-16}" rx="34" ry="20" fill="${hc}"/>`;
+      svg.innerHTML += `<ellipse cx="${cx-24}" cy="${headCY-4}" rx="12" ry="16" fill="${hc}"/>`;
+      svg.innerHTML += `<ellipse cx="${cx+24}" cy="${headCY-4}" rx="12" ry="16" fill="${hc}"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-18}" rx="28" ry="14" fill="${hcd}" opacity="0.25"/>`;
     },
     pigtails: () => {
       svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="14" rx="6" fill="${hc}"/>`;
       svg.innerHTML += `<ellipse cx="${cx-26}" cy="${headCY+6}" rx="8" ry="18" fill="${hc}"/>`;
       svg.innerHTML += `<ellipse cx="${cx+26}" cy="${headCY+6}" rx="8" ry="18" fill="${hc}"/>`;
+    },
+    longstraight: () => {
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="16" rx="6" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx-26}" y="${headCY-18}" width="12" height="60" rx="4" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx+14}" y="${headCY-18}" width="12" height="60" rx="4" fill="${hc}"/>`;
+      svg.innerHTML += `<rect x="${cx-26}" y="${headCY-18}" width="12" height="60" rx="4" fill="${hcd}" opacity="0.25"/>`;
+    },
+    longcurly: () => {
+      svg.innerHTML += `<rect x="${cx-24}" y="${headCY-24}" width="48" height="16" rx="6" fill="${hc}"/>`;
+      for (let i = 0; i < 5; i++) {
+        const y = headCY - 12 + i * 12;
+        svg.innerHTML += `<circle cx="${cx-24}" cy="${y}" r="8" fill="${i%2===0?hc:hcd}"/>`;
+        svg.innerHTML += `<circle cx="${cx+24}" cy="${y}" r="8" fill="${i%2===0?hcd:hc}"/>`;
+      }
     },
   };
   (hairs[s.hair] || (() => {}))();
@@ -958,10 +1027,11 @@ function drawFace(svg, s) {
 }
 
 function drawAccessory(svg, s) {
-  if (s.accessory === 'none') return;
+  if (s.accessory === 'none' || s.accessory === 'wings' || s.accessory === 'necklace') return;
   const cx = 100, headCY = 30;
   const d = getBodyDims(s.body);
   const bodyTop = 60;
+  const armTop = bodyTop + 4;
 
   const accs = {
     crown: () => {
@@ -979,55 +1049,48 @@ function drawAccessory(svg, s) {
       svg.innerHTML += `<rect x="${cx-25}" y="${headCY-5}" width="6" height="10" rx="3" fill="#e74c3c"/>`;
       svg.innerHTML += `<rect x="${cx+19}" y="${headCY-5}" width="6" height="10" rx="3" fill="#e74c3c"/>`;
     },
-    backpack: () => {
-      const bx = cx + d.tw/2 + 2;
-      svg.innerHTML += `<rect x="${bx}" y="${bodyTop+4}" width="16" height="28" rx="4" fill="#8e44ad"/>`;
-      svg.innerHTML += `<rect x="${bx+3}" y="${bodyTop+8}" width="10" height="8" rx="2" fill="#9b59b6"/>`;
-      svg.innerHTML += `<line x1="${bx+2}" y1="${bodyTop+4}" x2="${cx+d.tw/2-2}" y2="${bodyTop+6}" stroke="#6c3483" stroke-width="2" stroke-linecap="round"/>`;
-      svg.innerHTML += `<line x1="${bx+2}" y1="${bodyTop+28}" x2="${cx+d.tw/2-2}" y2="${bodyTop+d.th-4}" stroke="#6c3483" stroke-width="2" stroke-linecap="round"/>`;
-    },
-    wings: () => {
-      const wy = bodyTop + 10;
-      svg.innerHTML += `<path d="M${cx-d.tw/2-4} ${wy} Q${cx-d.tw/2-36} ${wy-20} ${cx-d.tw/2-28} ${wy+30} Q${cx-d.tw/2-16} ${wy+10} ${cx-d.tw/2-4} ${wy+20}" fill="rgba(255,255,255,0.6)"/>`;
-      svg.innerHTML += `<path d="M${cx+d.tw/2+4} ${wy} Q${cx+d.tw/2+36} ${wy-20} ${cx+d.tw/2+28} ${wy+30} Q${cx+d.tw/2+16} ${wy+10} ${cx+d.tw/2+4} ${wy+20}" fill="rgba(255,255,255,0.6)"/>`;
+    slingbag: () => {
+      const handY = armTop + d.al - 2;
+      const bagX = cx - d.tw/2 - d.aw - 4;
+      svg.innerHTML += `<line x1="${cx+d.tw/2+d.aw/2}" y1="${bodyTop-6}" x2="${bagX+8}" y2="${handY-4}" stroke="#6c3483" stroke-width="2.5" stroke-linecap="round"/>`;
+      svg.innerHTML += `<rect x="${bagX}" y="${handY-8}" width="16" height="20" rx="4" fill="#8e44ad"/>`;
+      svg.innerHTML += `<rect x="${bagX+3}" y="${handY-4}" width="10" height="6" rx="2" fill="#9b59b6"/>`;
+      svg.innerHTML += `<rect x="${bagX+5}" y="${handY-10}" width="6" height="4" rx="2" fill="#6c3483"/>`;
     },
     sword: () => {
-      const sx = cx + d.tw/2 + d.aw + 4;
-      const sy = bodyTop;
-      svg.innerHTML += `<rect x="${sx}" y="${sy-30}" width="4" height="50" rx="1" fill="#bdc3c7"/>`;
-      svg.innerHTML += `<rect x="${sx-4}" y="${sy+16}" width="12" height="5" rx="2" fill="#8B4513"/>`;
-      svg.innerHTML += `<rect x="${sx}" y="${sy+20}" width="4" height="10" rx="1" fill="#5c3317"/>`;
-      svg.innerHTML += `<polygon points="${sx+2},${sy-30} ${sx-1},${sy-36} ${sx+5},${sy-36}" fill="#ecf0f1"/>`;
+      const handX = cx + d.tw/2 + d.aw/2;
+      const handY = armTop + d.al;
+      svg.innerHTML += `<rect x="${handX-2}" y="${handY-52}" width="4" height="46" rx="1" fill="#bdc3c7"/>`;
+      svg.innerHTML += `<polygon points="${handX},${handY-52} ${handX-3},${handY-58} ${handX+3},${handY-58}" fill="#ecf0f1"/>`;
+      svg.innerHTML += `<rect x="${handX-2}" y="${handY-52}" width="4" height="46" rx="1" fill="url(#swordShine)" opacity="0.3"/>`;
+      svg.innerHTML += `<rect x="${handX-6}" y="${handY-8}" width="12" height="5" rx="2" fill="#d4ac0d"/>`;
+      svg.innerHTML += `<rect x="${handX-2}" y="${handY-4}" width="4" height="8" rx="1" fill="#8B4513"/>`;
+      svg.innerHTML += `<circle cx="${handX}" cy="${handY+2}" r="2" fill="#5c3317"/>`;
     },
     shield: () => {
-      const sx = cx - d.tw/2 - d.aw - 16;
-      const sy = bodyTop + 10;
-      svg.innerHTML += `<path d="M${sx} ${sy} L${sx+20} ${sy} L${sx+20} ${sy+20} L${sx+10} ${sy+30} L${sx} ${sy+20} Z" fill="#2c3e50"/>`;
-      svg.innerHTML += `<path d="M${sx+4} ${sy+4} L${sx+16} ${sy+4} L${sx+16} ${sy+18} L${sx+10} ${sy+26} L${sx+4} ${sy+18} Z" fill="#3498db"/>`;
-      svg.innerHTML += `<rect x="${sx+8}" y="${sy+6}" width="4" height="16" fill="#f1c40f"/>`;
-      svg.innerHTML += `<rect x="${sx+4}" y="${sy+10}" width="12" height="4" fill="#f1c40f"/>`;
+      const handX = cx - d.tw/2 - d.aw/2;
+      const handY = armTop + d.al/2;
+      const sw = 28, sh = 36;
+      svg.innerHTML += `<path d="M${handX-sw/2} ${handY-sh/2+4} L${handX+sw/2} ${handY-sh/2+4} L${handX+sw/2} ${handY+sh/4} L${handX} ${handY+sh/2} L${handX-sw/2} ${handY+sh/4} Z" fill="#2c3e50" stroke="#1a252f" stroke-width="1"/>`;
+      svg.innerHTML += `<path d="M${handX-sw/2+4} ${handY-sh/2+8} L${handX+sw/2-4} ${handY-sh/2+8} L${handX+sw/2-4} ${handY+sh/4-2} L${handX} ${handY+sh/2-4} L${handX-sw/2+4} ${handY+sh/4-2} Z" fill="#3498db"/>`;
+      svg.innerHTML += `<rect x="${handX-2}" y="${handY-sh/2+10}" width="4" height="${sh-16}" fill="#f1c40f"/>`;
+      svg.innerHTML += `<rect x="${handX-sw/2+6}" y="${handY-2}" width="${sw-12}" height="4" fill="#f1c40f"/>`;
     },
-    guitar: () => {
-      const gx = cx - d.tw/2 - d.aw - 10;
-      const gy = bodyTop;
-      svg.innerHTML += `<rect x="${gx+6}" y="${gy-30}" width="3" height="60" fill="#8B4513"/>`;
-      svg.innerHTML += `<ellipse cx="${gx+8}" cy="${gy+34}" rx="10" ry="14" fill="#d4a543"/>`;
-      svg.innerHTML += `<ellipse cx="${gx+8}" cy="${gy+34}" rx="3" ry="4" fill="#2c1b0e"/>`;
-      svg.innerHTML += `<rect x="${gx+2}" y="${gy-32}" width="12" height="6" rx="2" fill="#5c3317"/>`;
-    },
-    jetpack: () => {
-      const jx = cx;
-      const jy = bodyTop + 10;
-      svg.innerHTML += `<rect x="${jx-16}" y="${jy}" width="10" height="28" rx="4" fill="#7f8c8d"/>`;
-      svg.innerHTML += `<rect x="${jx+6}" y="${jy}" width="10" height="28" rx="4" fill="#7f8c8d"/>`;
-      svg.innerHTML += `<rect x="${jx-14}" y="${jy+2}" width="6" height="8" rx="2" fill="#e74c3c"/>`;
-      svg.innerHTML += `<rect x="${jx+8}" y="${jy+2}" width="6" height="8" rx="2" fill="#e74c3c"/>`;
-      svg.innerHTML += `<polygon points="${jx-12},${jy+28} ${jx-8},${jy+44} ${jx-16},${jy+44}" fill="#f39c12" opacity="0.8"/>`;
-      svg.innerHTML += `<polygon points="${jx+12},${jy+28} ${jx+16},${jy+44} ${jx+8},${jy+44}" fill="#f39c12" opacity="0.8"/>`;
+    rose: () => {
+      const handX = cx - d.tw/2 - d.aw/2;
+      const handY = armTop + d.al;
+      svg.innerHTML += `<line x1="${handX}" y1="${handY-4}" x2="${handX}" y2="${handY-34}" stroke="#27ae60" stroke-width="2.5" stroke-linecap="round"/>`;
+      svg.innerHTML += `<ellipse cx="${handX-4}" cy="${handY-22}" rx="3" ry="5" fill="#27ae60" transform="rotate(-20 ${handX-4} ${handY-22})"/>`;
+      svg.innerHTML += `<circle cx="${handX}" cy="${handY-36}" r="7" fill="#e74c3c"/>`;
+      svg.innerHTML += `<circle cx="${handX-4}" cy="${handY-34}" r="5" fill="#c0392b"/>`;
+      svg.innerHTML += `<circle cx="${handX+4}" cy="${handY-34}" r="5" fill="#c0392b"/>`;
+      svg.innerHTML += `<circle cx="${handX}" cy="${handY-38}" r="4" fill="#ff6b6b"/>`;
+      svg.innerHTML += `<circle cx="${handX}" cy="${handY-36}" r="2" fill="#f9e574"/>`;
     },
     halo: () => {
-      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-28}" rx="18" ry="5" fill="none" stroke="#f1c40f" stroke-width="3"/>`;
-      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-28}" rx="14" ry="3" fill="#f9e574" opacity="0.3"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-28}" rx="20" ry="6" fill="none" stroke="#f1c40f" stroke-width="3.5"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-28}" rx="20" ry="6" fill="none" stroke="#f9e574" stroke-width="1.5" opacity="0.5"/>`;
+      svg.innerHTML += `<ellipse cx="${cx}" cy="${headCY-28}" rx="14" ry="3.5" fill="#f9e574" opacity="0.25"/>`;
     },
   };
   (accs[s.accessory] || (() => {}))();
@@ -1040,18 +1103,22 @@ function renderAvatar(target, st, w, h) {
   target.innerHTML = '';
   const svg = document.createElementNS(svgNS, 'svg');
   svg.setAttribute('xmlns', svgNS);
-  svg.setAttribute('viewBox', '0 0 200 320');
+  svg.setAttribute('viewBox', '-30 -40 260 400');
   svg.setAttribute('width', width);
   svg.setAttribute('height', height);
 
   const g = document.createElementNS(svgNS, 'g');
   svg.appendChild(g);
 
+  drawWingsBack(g, st);
+  drawCapeBack(g, st);
   drawShoes(g, st);
   drawLegs(g, st);
   drawPants(g, st);
   drawShirt(g, st);
+  drawOverallsBib(g, st);
   drawBody(g, st);
+  drawNecklace(g, st);
   drawHead(g, st);
   drawHair(g, st);
   drawFace(g, st);
